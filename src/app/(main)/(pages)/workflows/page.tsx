@@ -12,13 +12,6 @@ const WorkFlowspage = (props: Props) => {
         <WorkflowsButton/>
       </h1>
       <Workflows/>
-      <Workflows/>
-      <Workflows/>
-      <Workflows/>
-      <Workflows/>
-      <Workflows/>
-      <Workflows/>
-      <Workflows/>
     </div>
   )
 }

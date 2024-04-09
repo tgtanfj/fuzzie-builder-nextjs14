@@ -1,20 +1,20 @@
-import { postContentToWebHook } from "@/app/(main)/(pages)/connections/_actions/discord-connection";
-import { Button } from "@/components/ui/button";
-import { ConnectionProviderProps } from "@/providers/connections-provider";
-import { Option } from "@/store";
-import { usePathname } from "next/navigation";
-import { useCallback } from "react";
-import { toast } from "sonner";
-import { onCreateNodeTemplate } from "../../../_actions/workflow-connection";
-import { onCreateNewPageInDatabase } from "@/app/(main)/(pages)/connections/_actions/notion-connection";
-import { postMessageToSlack } from "@/app/(main)/(pages)/connections/_actions/slack-connection";
+import React, { useCallback } from 'react'
+import { ConnectionProviderProps } from '@/providers/connections-provider'
+import { usePathname } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { postContentToWebHook } from '@/app/(main)/(pages)/connections/_actions/discord-connection'
+import { toast } from 'sonner'
+import { onCreateNewPageInDatabase } from '@/app/(main)/(pages)/connections/_actions/notion-connection'
+import { postMessageToSlack } from '@/app/(main)/(pages)/connections/_actions/slack-connection'
+import { Option } from '@/store'
+import { onCreateNodeTemplate } from '../../../_actions/workflow-connection'
 
 type Props = {
-  currentService: string;
-  nodeConnection: ConnectionProviderProps;
-  channels: Option[];
-  setChannels?: (value: Option[]) => void;
-};
+  currentService: string
+  nodeConnection: ConnectionProviderProps
+  channels?: Option[]
+  setChannels?: (value: Option[]) => void
+}
 
 const ActionButton = ({
   currentService,
@@ -22,7 +22,21 @@ const ActionButton = ({
   channels,
   setChannels,
 }: Props) => {
-  const pathname = usePathname();
+  const pathname = usePathname()
+
+  const onSendDiscordMessage = useCallback(async () => {
+    const response = await postContentToWebHook(
+      nodeConnection.discordNode.content,
+      nodeConnection.discordNode.webhookURL
+    )
+
+    if (response.message == 'success') {
+      nodeConnection.setDiscordNode((prev: any) => ({
+        ...prev,
+        content: '',
+      }))
+    }
+  }, [nodeConnection.discordNode])
 
   const onStoreNotionContent = useCallback(async () => {
     console.log(
@@ -61,97 +75,109 @@ const ActionButton = ({
     }
   }, [nodeConnection.slackNode, channels])
 
-  const onSendDiscordMessage = useCallback(async () => {
-    const response = await postContentToWebHook(
-      nodeConnection.discordNode.content,
-      nodeConnection.discordNode.webhookURL
-    );
-
-    if (response.message === "success") {
-      nodeConnection.setDiscordNode((prev: any) => ({
-        ...prev,
-        content: "",
-      }));
-    }
-  }, [nodeConnection.discordNode]);
-
-  const onCreateLocalNodeTemplate = useCallback(async () => {
-    if (currentService === "Discord") {
+  const onCreateLocalNodeTempate = useCallback(async () => {
+    if (currentService === 'Discord') {
       const response = await onCreateNodeTemplate(
         nodeConnection.discordNode.content,
         currentService,
-        pathname.split("/").pop()!
-      );
+        pathname.split('/').pop()!
+      )
 
       if (response) {
-        toast.message(response);
+        toast.message(response)
       }
     }
-    if (currentService === "Slack") {
+    if (currentService === 'Slack') {
       const response = await onCreateNodeTemplate(
         nodeConnection.slackNode.content,
         currentService,
-        pathname.split("/").pop()!,
+        pathname.split('/').pop()!,
         channels,
         nodeConnection.slackNode.slackAccessToken
-      );
+      )
 
       if (response) {
-        toast.message(response);
+        toast.message(response)
       }
     }
 
-    if (currentService === "Notion") {
+    if (currentService === 'Notion') {
       const response = await onCreateNodeTemplate(
         JSON.stringify(nodeConnection.notionNode.content),
         currentService,
-        pathname.split("/").pop()!,
+        pathname.split('/').pop()!,
         [],
         nodeConnection.notionNode.accessToken,
         nodeConnection.notionNode.databaseId
-      );
+      )
 
       if (response) {
-        toast.message(response);
+        toast.message(response)
       }
     }
-  }, [nodeConnection, channels]);
+  }, [nodeConnection, channels])
 
   const renderActionButton = () => {
     switch (currentService) {
-      case "Discord":
+      case 'Discord':
         return (
           <>
-            <Button variant="outline" onClick={onSendDiscordMessage}>
+            <Button
+              variant="outline"
+              onClick={onSendDiscordMessage}
+            >
               Test Message
             </Button>
-            <Button variant="outline" onClick={onCreateLocalNodeTemplate}>
+            <Button
+              onClick={onCreateLocalNodeTempate}
+              variant="outline"
+            >
               Save Template
             </Button>
           </>
-        );
+        )
 
-      case "Notion":
+      case 'Notion':
         return (
           <>
-            <Button variant="outline" onClick={onStoreNotionContent}>
+            <Button
+              variant="outline"
+              onClick={onStoreNotionContent}
+            >
               Test
             </Button>
-            <Button variant="outline" onClick={onCreateLocalNodeTemplate}>
+            <Button
+              onClick={onCreateLocalNodeTempate}
+              variant="outline"
+            >
               Save Template
             </Button>
           </>
-        );
+        )
 
-      case "Slack":
-        break;
+      case 'Slack':
+        return (
+          <>
+            <Button
+              variant="outline"
+              onClick={onStoreSlackContent}
+            >
+              Send Message
+            </Button>
+            <Button
+              onClick={onCreateLocalNodeTempate}
+              variant="outline"
+            >
+              Save Template
+            </Button>
+          </>
+        )
 
       default:
-        return null;
+        return null
     }
-  };
+  }
+  return renderActionButton()
+}
 
-  return renderActionButton();
-};
-
-export default ActionButton;
+export default ActionButton

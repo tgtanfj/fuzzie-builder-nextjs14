@@ -1,11 +1,11 @@
-'use server'
+"use server";
 
-import { db } from "@/lib/db"
-import { Option } from "@/store"
-import { auth } from "@clerk/nextjs"
+import { db } from "@/lib/db";
+import { Option } from "@/store";
+import { auth, currentUser } from "@clerk/nextjs";
 
 export const getGoogleListener = async () => {
-  const { userId } = auth()
+  const { userId } = auth();
 
   if (userId) {
     const listener = await db.user.findUnique({
@@ -15,11 +15,11 @@ export const getGoogleListener = async () => {
       select: {
         googleResourceId: true,
       },
-    })
+    });
 
-    if (listener) return listener
+    if (listener) return listener;
   }
-}
+};
 
 export const onCreateNodeTemplate = async (
   content: string,
@@ -29,7 +29,7 @@ export const onCreateNodeTemplate = async (
   accessToken?: string,
   notionDbId?: string
 ) => {
-  if (type === 'Discord') {
+  if (type === "Discord") {
     const response = await db.workflows.update({
       where: {
         id: workflowId,
@@ -37,13 +37,13 @@ export const onCreateNodeTemplate = async (
       data: {
         discordTemplate: content,
       },
-    })
+    });
 
     if (response) {
-      return 'Discord template saved'
+      return "Discord template saved";
     }
   }
-  if (type === 'Slack') {
+  if (type === "Slack") {
     const response = await db.workflows.update({
       where: {
         id: workflowId,
@@ -52,7 +52,7 @@ export const onCreateNodeTemplate = async (
         slackTemplate: content,
         slackAccessToken: accessToken,
       },
-    })
+    });
 
     if (response) {
       const channelList = await db.workflows.findUnique({
@@ -62,13 +62,13 @@ export const onCreateNodeTemplate = async (
         select: {
           slackChannels: true,
         },
-      })
+      });
 
       if (channelList) {
         //remove duplicates before insert
         const NonDuplicated = channelList.slackChannels.filter(
           (channel) => channel !== channels![0].value
-        )
+        );
 
         NonDuplicated!
           .map((channel) => channel)
@@ -82,10 +82,10 @@ export const onCreateNodeTemplate = async (
                   push: channel,
                 },
               },
-            })
-          })
+            });
+          });
 
-        return 'Slack template saved'
+        return "Slack template saved";
       }
       channels!
         .map((channel) => channel.value)
@@ -99,13 +99,13 @@ export const onCreateNodeTemplate = async (
                 push: channel,
               },
             },
-          })
-        })
-      return 'Slack template saved'
+          });
+        });
+      return "Slack template saved";
     }
   }
 
-  if (type === 'Notion') {
+  if (type === "Notion") {
     const response = await db.workflows.update({
       where: {
         id: workflowId,
@@ -115,8 +115,44 @@ export const onCreateNodeTemplate = async (
         notionAccessToken: accessToken,
         notionDbId: notionDbId,
       },
+    });
+
+    if (response) return "Notion template saved";
+  }
+};
+
+export const onGetWorkflow = async () => {
+  const user = await currentUser();
+  if (user) {
+    const workflow = await db.workflows.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    if (workflow) {
+      return workflow;
+    }
+  }
+};
+
+export const onCreateWorkflow = async (name: string, description: string) => {
+  const user = await currentUser();
+
+  if(user) {
+    //create new workflow
+    const workflow = await db.workflows.create({
+      data: {
+        userId: user.id,
+        name,
+        description
+      }
     })
 
-    if (response) return 'Notion template saved'
+    if(workflow) {
+      return {message: "Workflow created"}
+    }
+    
+    return {message: "Oops! Please try again"}
   }
-}
+};
