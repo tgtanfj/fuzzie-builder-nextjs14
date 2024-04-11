@@ -1,31 +1,31 @@
-import { EditorCanvasCardType } from "@/lib/types";
-import { useEditor } from "@/providers/editor-provider";
-import React, { useMemo } from "react";
-import { Position, useNodeId } from "reactflow";
-import EditorCanvasCardIconHelper from "./editor-canvas-card-icon-helper";
-import CustomHandle from "./custom-handle";
+import { EditorCanvasCardType } from '@/lib/types'
+import { useEditor } from '@/providers/editor-provider'
+import React, { useMemo } from 'react'
+import { Position, useNodeId } from 'reactflow'
+import CustomHandle from './custom-handle'
+import { Badge } from '@/components/ui/badge'
+
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/card'
+import clsx from 'clsx'
+import EditorCanvasIconHelper from './editor-canvas-card-icon-helper'
 
-type Props = {};
+type Props = {}
 
 const EditorCanvasCardSingle = ({ data }: { data: EditorCanvasCardType }) => {
-  const { dispatch, state } = useEditor();
-  const nodeId = useNodeId();
-
+  const { dispatch, state } = useEditor()
+  const nodeId = useNodeId()
   const logo = useMemo(() => {
-    return <EditorCanvasCardIconHelper type={data.type} />;
-  }, [data]);
+    return <EditorCanvasIconHelper type={data.type} />
+  }, [data])
 
   return (
     <>
-      {data.type !== "Trigger" && data.type !== "Google Drive" && (
+      {data.type !== 'Trigger' && data.type !== 'Google Drive' && (
         <CustomHandle
           type="target"
           position={Position.Top}
@@ -34,20 +34,19 @@ const EditorCanvasCardSingle = ({ data }: { data: EditorCanvasCardType }) => {
       )}
       <Card
         onClick={(e) => {
-          e.stopPropagation();
-          const val = state.editor.elements.find((n) => n.id === nodeId);
-          if (val) {
+          e.stopPropagation()
+          const val = state.editor.elements.find((n) => n.id === nodeId)
+          if (val)
             dispatch({
-              type: "SELECTED_ELEMENT",
+              type: 'SELECTED_ELEMENT',
               payload: {
                 element: val,
               },
-            });
-          }
+            })
         }}
-        className="relative max-w-[408px] dark:border-muted-foreground/70"
+        className="relative max-w-[400px] dark:border-muted-foreground/70"
       >
-        <CardHeader className="flex flex-col items-center gap-4">
+        <CardHeader className="flex flex-row items-center gap-4">
           <div>{logo}</div>
           <div>
             <CardTitle className="text-md">{data.title}</CardTitle>
@@ -60,16 +59,19 @@ const EditorCanvasCardSingle = ({ data }: { data: EditorCanvasCardType }) => {
             </CardDescription>
           </div>
         </CardHeader>
-        <Badge variant="secondary" className="absolute right-2 top-2">
+        <Badge
+          variant="secondary"
+          className="absolute right-2 top-2"
+        >
           {data.type}
         </Badge>
         <div
-          className={cn("absolute left-3 top-4 h-2 w-2 rounded-full", {
-            "bg-green-500": Math.random() < 0.6,
-            "bg-orange-500": Math.random() >= 0.6 && Math.random() < 0.8,
-            "bg-red-500": Math.random() >= 0.8,
+          className={clsx('absolute left-3 top-4 h-2 w-2 rounded-full', {
+            'bg-green-500': Math.random() < 0.6,
+            'bg-orange-500': Math.random() >= 0.6 && Math.random() < 0.8,
+            'bg-red-500': Math.random() >= 0.8,
           })}
-        />
+        ></div>
       </Card>
       <CustomHandle
         type="source"
@@ -77,7 +79,7 @@ const EditorCanvasCardSingle = ({ data }: { data: EditorCanvasCardType }) => {
         id="a"
       />
     </>
-  );
-};
+  )
+}
 
-export default EditorCanvasCardSingle;
+export default EditorCanvasCardSingle

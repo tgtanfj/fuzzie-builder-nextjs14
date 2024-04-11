@@ -1,20 +1,58 @@
-"use client";
+'use client'
+import React from 'react'
+import ConnectionCard from '@/app/(main)/(pages)/connections/_components/connection-card'
+import { AccordionContent } from '@/components/ui/accordion'
+import { Connection } from '@/lib/types'
+import { useNodeConnections } from '@/providers/connections-provider'
+import { EditorState } from '@/providers/editor-provider'
+import { useFuzzieStore } from '@/store'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from '@/components/ui/command'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { CheckIcon, ChevronsUpDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import MultipleSelector from '@/components/ui/mutiple-selector'
 
-import ConnectionCard from "@/app/(main)/(pages)/connections/_components/connection-card";
-import { AccordionContent } from "@/components/ui/accordion";
-import MultipleSelector from "@/components/ui/mutiple-selector";
-import { Connection } from "@/lib/types";
-import { useNodeConnections } from "@/providers/connections-provider";
-import { EditorState } from "@/providers/editor-provider";
-import { useFuzzieStore } from "@/store";
-import React from "react";
+const frameworks = [
+  {
+    value: 'next.js',
+    label: 'Next.js',
+  },
+  {
+    value: 'sveltekit',
+    label: 'SvelteKit',
+  },
+  {
+    value: 'nuxt.js',
+    label: 'Nuxt.js',
+  },
+  {
+    value: 'remix',
+    label: 'Remix',
+  },
+  {
+    value: 'astro',
+    label: 'Astro',
+  },
+]
 
-type Props = {
-  connection: Connection;
-  state: EditorState;
-};
-
-const RenderConnectionAccordion = ({ connection, state }: Props) => {
+const RenderConnectionAccordion = ({
+  connection,
+  state,
+}: {
+  connection: Connection
+  state: EditorState
+}) => {
   const {
     title,
     image,
@@ -23,19 +61,22 @@ const RenderConnectionAccordion = ({ connection, state }: Props) => {
     accessTokenKey,
     alwaysTrue,
     slackSpecial,
-  } = connection;
+  } = connection
 
-  const { nodeConnection } = useNodeConnections();
+  const { nodeConnection } = useNodeConnections()
   const { slackChannels, selectedSlackChannels, setSelectedSlackChannels } =
-    useFuzzieStore();
+    useFuzzieStore()
 
-  const connectionData = (nodeConnection as any)[connectionKey];
+  const [open, setOpen] = React.useState(false)
+  const [value, setValue] = React.useState('')
+
+  const connectionData = (nodeConnection as any)[connectionKey]
 
   const isConnected =
     alwaysTrue ||
     (nodeConnection[connectionKey] &&
       accessTokenKey &&
-      connectionData[accessTokenKey!]);
+      connectionData[accessTokenKey!])
 
   return (
     <AccordionContent key={title}>
@@ -68,14 +109,14 @@ const RenderConnectionAccordion = ({ connection, state }: Props) => {
                   />
                 </>
               ) : (
-                "No Slack channels found. Please add your Slack bot to your Slack channel"
+                'No Slack channels found. Please add your Slack bot to your Slack channel'
               )}
             </div>
           )}
         </>
       )}
     </AccordionContent>
-  );
-};
+  )
+}
 
-export default RenderConnectionAccordion;
+export default RenderConnectionAccordion
